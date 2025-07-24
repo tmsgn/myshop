@@ -1,10 +1,10 @@
+import prismadb from "@/lib/prismadb";
 import { ProductsClient } from "./components/product-client";
-import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+
 
 const ProductsPage = async ({ params }: any) => {
-  const products = await prisma.product.findMany({
+  const products = await prismadb.product.findMany({
     where: {
       storeId: params.storeid,
     },

@@ -1,8 +1,41 @@
-// Continue in the same file...
-
 import prismadb from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+
+export async function GET(
+  req: Request,
+  { params }: { params: { storeid: string } }
+) {
+  try {
+    if (!params.storeid) {
+      return new NextResponse("Store ID is required", { status: 400 });
+    }
+
+    const products = await prismadb.product.findMany({
+      where: { storeId: params.storeid },
+      include: {
+        images: true,
+        Brand: true,
+        Subcategory: true,
+        variants: {
+          include: {
+            images: true,
+            optionValues: true,
+          },
+        },
+        options: true,
+      },
+    });
+
+    return NextResponse.json(products);
+  } catch (error: any) {
+    console.error("[PRODUCTS_GET]", error);
+    return new NextResponse(error?.message || "Internal server error", {
+      status: 500,
+    });
+  }
+}
+// Continue in the same file...
 
 export async function POST(
   req: Request,
@@ -59,7 +92,6 @@ export async function POST(
     if (!storeByUserId)
       return new NextResponse("Unauthorized", { status: 403 });
 
-  
     const allVariantOptionKeys: string[] = Array.from(
       new Set(
         variants.flatMap((variant: any) =>
