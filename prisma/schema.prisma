@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  slug          String        @unique
+  subcategories Subcategory[]
+  brands        Brand[]       @relation("BrandToCategory")
+}
+
+model Subcategory {
+  id         String    @id @default(cuid())
+  name       String
+  categoryId String
+  Category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+  options    Option[]
+}
+
+model Option {
+  id            String          @id @default(cuid())
+  name          String
+  subcategoryId String
+  Subcategory   Subcategory     @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+  values        OptionValue[]
+  products      ProductOption[]
+}
+
+model OptionValue {
+  id       String          @id @default(cuid())
+  value    String
+  optionId String
+  Option   Option          @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  variants VariantOption[]
+}
+
+model Store {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  name      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Brand {
+  id         String     @id @default(cuid())
+  name       String     @unique
+  slug       String     @unique
+  products   Product[]
+  categories Category[] @relation("BrandToCategory")
+}
+
+model Product {
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  description   String?
+  price         Float
+  isFeatured    Boolean         @default(false)
+  status        ProductStatus   @default(DRAFT)
+  storeId       String
+  Store         Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  brandId       String
+  Brand         Brand           @relation(fields: [brandId], references: [id])
+  subcategoryId String
+  Subcategory   Subcategory     @relation(fields: [subcategoryId], references: [id])
+  options       ProductOption[]
+  variants      Variant[]
+  images        Image[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ProductOption {
+  id        String  @id @default(cuid())
+  productId String
+  optionId  String
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Option    Option  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, optionId])
+}
+
+model Variant {
+  id           String          @id @default(cuid())
+  sku          String          @unique
+  price        Float
+  stock        Int
+  productId    String
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues VariantOption[]
+  images       Image[]
+}
+
+model VariantOption {
+  id            String      @id @default(cuid())
+  variantId     String
+  optionValueId String
+  variant       Variant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  optionValue   OptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, optionValueId])
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?
+  Variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+}
