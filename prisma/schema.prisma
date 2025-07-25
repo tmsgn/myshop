@@ -58,6 +58,7 @@ model Store {
   userId    String    @unique
   name      String
   products  Product[]
+  orders    Order[]
   createdAt DateTime  @default(now())
 }
 
@@ -90,6 +91,8 @@ model Product {
   discountValue Float?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  orderProducts OrderProduct[]
+  reviews       Review[]
 }
 
 model ProductOption {
@@ -130,4 +133,38 @@ model Image {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId String?
   Variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+}
+
+model Order {
+  id        String         @id @default(cuid())
+  storeId   String
+  Store     Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId    String
+  products  OrderProduct[]
+  total     Float
+  status    String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  reviews   Review[]
+}
+
+model OrderProduct {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  Order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  orderId   String?
+  Order     Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

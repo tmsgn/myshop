@@ -1,6 +1,6 @@
 // prisma/seed.ts
 
-import { PrismaClient, ProductStatus } from "@prisma/client";
+import { PrismaClient } from "../lib/generated/prisma";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
@@ -58,7 +58,7 @@ async function main() {
     { name: "Automotive" },
     { name: "Health & Wellness" },
     { name: "Office Supplies" },
-    { name: "Pet Supplies" }
+    { name: "Pet Supplies" },
   ].map((c) => ({ ...c, slug: slugify(c.name) }));
 
   const brandsData = [
@@ -77,7 +77,7 @@ async function main() {
     { name: "Ford", categories: ["Automotive"] },
     { name: "Philips", categories: ["Health & Wellness", "Electronics"] },
     { name: "HP", categories: ["Office Supplies", "Electronics"] },
-    { name: "Purina", categories: ["Pet Supplies"] }
+    { name: "Purina", categories: ["Pet Supplies"] },
   ];
 
   await prisma.category.createMany({ data: categoriesData });
@@ -85,7 +85,9 @@ async function main() {
   const categoryMap = new Map(createdCategories.map((c) => [c.name, c.id]));
 
   for (const brand of brandsData) {
-    const categoryIds = brand.categories.map((name) => ({ id: categoryMap.get(name)! }));
+    const categoryIds = brand.categories.map((name) => ({
+      id: categoryMap.get(name)!,
+    }));
     await prisma.brand.create({
       data: {
         name: brand.name,
@@ -100,53 +102,53 @@ async function main() {
     Clothing: [
       { name: "T-Shirts", options: ["Color", "Size", "Material"] },
       { name: "Jeans", options: ["Waist", "Length", "Color"] },
-      { name: "Jackets", options: ["Size", "Material", "Color"] }
+      { name: "Jackets", options: ["Size", "Material", "Color"] },
     ],
     Electronics: [
       { name: "Smartphones", options: ["Color", "Storage", "Finish"] },
       { name: "Laptops", options: ["RAM", "Storage", "Screen Size"] },
       { name: "Headphones", options: ["Type", "Color"] },
-      { name: "Tablets", options: ["Storage", "Color"] }
+      { name: "Tablets", options: ["Storage", "Color"] },
     ],
     "Home & Garden": [
       { name: "Furniture", options: ["Material", "Color"] },
       { name: "Lighting", options: ["Type", "Wattage"] },
-      { name: "Grills", options: ["Fuel Type", "Material"] }
+      { name: "Grills", options: ["Fuel Type", "Material"] },
     ],
     Books: [
       { name: "Fiction", options: ["Format"] },
       { name: "Non-fiction", options: ["Format"] },
-      { name: "Textbooks", options: ["Format", "Edition"] }
+      { name: "Textbooks", options: ["Format", "Edition"] },
     ],
     "Sports & Outdoors": [
       { name: "Tents", options: ["Capacity"] },
       { name: "Bikes", options: ["Frame Size", "Color"] },
-      { name: "Fitness Equipment", options: ["Weight", "Type"] }
+      { name: "Fitness Equipment", options: ["Weight", "Type"] },
     ],
     "Beauty & Personal Care": [
       { name: "Skincare", options: ["Skin Type", "Volume"] },
-      { name: "Makeup", options: ["Shade", "Type"] }
+      { name: "Makeup", options: ["Shade", "Type"] },
     ],
     "Toys & Games": [
       { name: "Building Sets", options: ["Age Range", "Pieces"] },
-      { name: "Action Figures", options: ["Franchise"] }
+      { name: "Action Figures", options: ["Franchise"] },
     ],
     Automotive: [
       { name: "Car Accessories", options: ["Material", "Color"] },
-      { name: "Tools", options: ["Type", "Size"] }
+      { name: "Tools", options: ["Type", "Size"] },
     ],
     "Health & Wellness": [
       { name: "Supplements", options: ["Type", "Volume"] },
-      { name: "First Aid", options: ["Type"] }
+      { name: "First Aid", options: ["Type"] },
     ],
     "Office Supplies": [
       { name: "Printers", options: ["Type", "Color"] },
-      { name: "Stationery", options: ["Type", "Color"] }
+      { name: "Stationery", options: ["Type", "Color"] },
     ],
     "Pet Supplies": [
       { name: "Pet Food", options: ["Flavor", "Weight"] },
-      { name: "Toys", options: ["Type", "Material"] }
-    ]
+      { name: "Toys", options: ["Type", "Material"] },
+    ],
   };
 
   const optionValueDefinitions = {
@@ -160,7 +162,14 @@ async function main() {
     Finish: ["Matte", "Glossy", "Titanium"],
     RAM: ["4GB", "8GB", "16GB", "32GB"],
     "Screen Size": ['11"', '13"', '15"', '17"'],
-    Type: ["Over-Ear", "In-Ear", "On-Ear", "Inkjet", "Laser", "Resistance Band"],
+    Type: [
+      "Over-Ear",
+      "In-Ear",
+      "On-Ear",
+      "Inkjet",
+      "Laser",
+      "Resistance Band",
+    ],
     "Fuel Type": ["Gas", "Charcoal", "Electric"],
     Format: ["Hardcover", "Paperback", "E-book"],
     Capacity: ["1-person", "2-person", "4-person", "6-person"],
@@ -174,7 +183,7 @@ async function main() {
     Franchise: ["Marvel", "Star Wars", "DC"],
     "Frame Size": ["Small", "Medium", "Large"],
     Weight: ["1kg", "2kg", "5kg", "10kg"],
-    Flavor: ["Chicken", "Beef", "Fish", "Lamb"]
+    Flavor: ["Chicken", "Beef", "Fish", "Lamb"],
   };
 
   for (const [catName, subcats] of Object.entries(subcategoryDefinitions)) {
@@ -186,7 +195,10 @@ async function main() {
         const option = await prisma.option.create({
           data: { name: optionName, subcategoryId: subcategory.id },
         });
-        const values = optionValueDefinitions[optionName as keyof typeof optionValueDefinitions];
+        const values =
+          optionValueDefinitions[
+            optionName as keyof typeof optionValueDefinitions
+          ];
         if (values) {
           await prisma.optionValue.createMany({
             data: values.map((value) => ({ value, optionId: option.id })),
@@ -197,6 +209,86 @@ async function main() {
   }
 
   console.log("✅ Catalog seeding finished successfully.");
+
+  // --- DASHBOARD DEMO DATA ---
+  const demoStoreId = "cmdg4uzw20000tjegswwzctzr";
+  // Create 10 demo users
+  const demoUsers = Array.from({ length: 10 }).map(() => ({
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+  }));
+
+  // Create 10 demo products for the store
+  const demoProductIds: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const category = faker.helpers.arrayElement(createdCategories);
+    const brand = faker.helpers.arrayElement(await prisma.brand.findMany());
+    const subcategory = await prisma.subcategory.findFirst({
+      where: { categoryId: category.id },
+    });
+    const product = await prisma.product.create({
+      data: {
+        name: faker.commerce.productName(),
+        slug: slugify(
+          faker.commerce.productName() + "-" + faker.string.uuid().slice(0, 6)
+        ),
+        description: faker.commerce.productDescription(),
+        price: faker.number.float({ min: 10, max: 500, fractionDigits: 2 }),
+        status: "PUBLISHED",
+        storeId: demoStoreId,
+        brandId: brand.id,
+        subcategoryId: subcategory?.id ?? createdCategories[0].id,
+      },
+    });
+    demoProductIds.push(product.id);
+  }
+
+  // Create 40 demo orders for the store
+  for (let i = 0; i < 40; i++) {
+    const user = faker.helpers.arrayElement(demoUsers);
+    const order = await prisma.order.create({
+      data: {
+        storeId: demoStoreId,
+        userId: user.id,
+        total: faker.number.float({ min: 20, max: 500, fractionDigits: 2 }),
+        status: faker.helpers.arrayElement([
+          "DELIVERED",
+          "PROCESSING",
+          "SHIPPED",
+          "CANCELLED",
+        ]),
+        createdAt: faker.date.recent({ days: 14 }),
+      },
+    });
+
+    // Each order has 1-3 products
+    const productsInOrder = getRandomSubset(demoProductIds, 1, 3);
+    for (const pid of productsInOrder) {
+      await prisma.orderProduct.create({
+        data: {
+          orderId: order.id,
+          productId: pid,
+        },
+      });
+    }
+
+    // Add reviews for all products in the order
+    for (const pid of productsInOrder) {
+      if (Math.random() > 0.3) {
+        await prisma.review.create({
+          data: {
+            productId: pid,
+            userId: user.id,
+            orderId: order.id,
+            rating: faker.number.int({ min: 3, max: 5 }),
+            comment: faker.lorem.sentence(),
+          },
+        });
+      }
+    }
+  }
+  console.log("🌟 Demo dashboard data seeded for store:", demoStoreId);
 }
 
 main()
