@@ -61,6 +61,8 @@ export async function POST(
       options = [],
       variants = [],
       images = [],
+      discountType = null,
+      discountValue = null,
     } = body;
 
     // Validation
@@ -138,6 +140,8 @@ export async function POST(
               })),
             },
           },
+          discountType: discountType || null,
+          discountValue: discountValue !== null ? Number(discountValue) : null,
         },
       });
 

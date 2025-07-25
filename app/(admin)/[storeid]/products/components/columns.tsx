@@ -18,8 +18,6 @@ import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { AlertModal } from "@/components/modals/alert-modal";
 
-// This type is manually created based on the expected data from Prisma
-// The query should include brand, subcategory, and a _count of variants.
 export type Product = {
   id: string;
   name: string;

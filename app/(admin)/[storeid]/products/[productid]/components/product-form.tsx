@@ -39,6 +39,7 @@ import {
 import { generateSKU } from "@/lib/utils";
 
 const ProductStatus = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
+const DiscountTypeEnum = z.enum(["PERCENTAGE", "FIXED"]);
 
 const productFormSchema = z.object({
   name: z.string().min(1),
@@ -53,6 +54,8 @@ const productFormSchema = z.object({
   isFeatured: z.boolean(),
   status: ProductStatus,
   options: z.array(z.string()),
+  discountType: DiscountTypeEnum.optional().nullable(),
+  discountValue: z.number().optional().nullable(),
   variants: z
     .array(
       z
@@ -106,6 +109,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       isFeatured: false,
       status: "DRAFT",
       options: [],
+      discountType: null,
+      discountValue: null,
       variants: [],
     },
   });
@@ -194,7 +199,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     try {
       setLoading(true);
       if (productId) {
-        await axios.patch(`/api/${storeId}/products/${productId}`, { ...data, storeId });
+        await axios.patch(`/api/${storeId}/products/${productId}`, {
+          ...data,
+          storeId,
+        });
         toast.success("Product updated successfully!");
       } else {
         await axios.post(`/api/${storeId}/products`, { ...data, storeId });
@@ -277,6 +285,55 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         onChange={(e) => field.onChange(Number(e.target.value))}
                         disabled={loading}
                         placeholder="e.g., 29.99"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="discountType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount Type</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value || ""}
+                        onValueChange={field.onChange}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select discount type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PERCENTAGE">Percentage</SelectItem>
+                          <SelectItem value="FIXED">Fixed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="discountValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discount Value</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        disabled={loading || !form.watch("discountType")}
+                        placeholder={
+                          form.watch("discountType") === "PERCENTAGE"
+                            ? "e.g., 10 for 10%"
+                            : "e.g., 5 for $5 off"
+                        }
                       />
                     </FormControl>
                     <FormMessage />

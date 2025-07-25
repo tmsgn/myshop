@@ -24,6 +24,8 @@ export async function PATCH(
       options = [],
       variants = [],
       images = [],
+      discountType = null,
+      discountValue = null,
     } = body;
 
     // Validate store ownership
@@ -58,6 +60,8 @@ export async function PATCH(
             : status === "ARCHIVED"
             ? "ARCHIVED"
             : "DRAFT",
+        discountType: discountType || null,
+        discountValue: discountValue !== null ? Number(discountValue) : null,
       },
     });
 

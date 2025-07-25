@@ -27,6 +27,8 @@ export default async function ProductPage({
                 isFeatured: true,
                 status: true,
                 images: true,
+                discountType: true,
+                discountValue: true,
                 options: {
                   include: {
                     Option: true,
@@ -111,6 +113,8 @@ export default async function ProductPage({
             ...optionValueMap,
           };
         }) || [],
+      discountType: product.discountType ?? null,
+      discountValue: product.discountValue ?? null,
     };
   }
 
