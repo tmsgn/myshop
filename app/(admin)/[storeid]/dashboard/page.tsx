@@ -58,6 +58,10 @@ type DashboardData = {
     date: string;
   }[];
   topProducts: { name: string; sold: number }[];
+  revenueChange: number;
+  salesChange: number;
+  customersChange: number;
+  avgOrderValueChange: number;
 };
 
 export default function DashboardPage() {
@@ -95,7 +99,17 @@ export default function DashboardPage() {
     categorySalesData,
     recentOrders,
     topProducts,
+    revenueChange,
+    salesChange,
+    customersChange,
+    avgOrderValueChange,
   } = data;
+  // Helper to format change with sign and percent
+  const formatChange = (value: number | undefined | null) => {
+    if (typeof value !== "number" || isNaN(value)) return "-";
+    const sign = value > 0 ? "+" : value < 0 ? "" : "";
+    return `${sign}${value.toFixed(1)}% from last month`;
+  };
 
   // --- CHART CONFIGS ---
   const barChartConfig = {
@@ -157,7 +171,7 @@ export default function DashboardPage() {
               {formatCurrency(totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              {formatChange(revenueChange)}
             </p>
           </CardContent>
         </Card>
@@ -169,7 +183,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">+{totalSales}</div>
             <p className="text-xs text-muted-foreground">
-              +180.1% from last month
+              {formatChange(salesChange)}
             </p>
           </CardContent>
         </Card>
@@ -181,7 +195,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">+{newCustomers}</div>
             <p className="text-xs text-muted-foreground">
-              +19% from last month
+              {formatChange(customersChange)}
             </p>
           </CardContent>
         </Card>
@@ -197,7 +211,7 @@ export default function DashboardPage() {
               {formatCurrency(avgOrderValue)}
             </div>
             <p className="text-xs text-muted-foreground">
-              -2.5% from last month
+              {formatChange(avgOrderValueChange)}
             </p>
           </CardContent>
         </Card>

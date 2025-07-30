@@ -208,8 +208,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         await axios.post(`/api/${storeId}/products`, { ...data, storeId });
         toast.success("Product created successfully!");
       }
-      router.push(`/${storeId}/products`);
-      router.refresh();
+      window.location.href = `/${storeId}/products`;
     } catch (error) {
       console.error("API Error:", error);
       toast.error("Something went wrong.");
